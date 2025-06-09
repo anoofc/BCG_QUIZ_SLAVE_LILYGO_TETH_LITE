@@ -6,6 +6,10 @@
 #define LED_PIN     13    // GPIO pin for NeoPixel strip
 #define SWITCH_PIN  14    // GPIO pin for the switch input
 
+#define RED   255, 0,   0  // Red color value for NeoPixel
+#define GREEN 0,   255, 0
+#define BLUE  0,   0,   255  // Blue color value for NeoPixel
+
 #define DEBOUNCE_DELAY 500 // Debounce delay for switch input in milliseconds
 
 #include <Arduino.h>
@@ -92,10 +96,10 @@ void loadConfig() {
 
 void loadNetworkConfig() {
   preferences.begin("CONFIG", true);
-  ip      = loadIPAddress("ip",  IPAddress(10, 255, 250, 150));
-  subnet  = loadIPAddress("sub", IPAddress(255, 255, 254, 0));
-  gateway = loadIPAddress("gw",  IPAddress(10, 255, 250, 1));
-  outIp   = loadIPAddress("out", IPAddress(10, 255, 250, 129));
+  ip      = loadIPAddress("ip",  IPAddress(192, 168, 1, 101));
+  subnet  = loadIPAddress("sub", IPAddress(255, 255, 255, 0));
+  gateway = loadIPAddress("gw",  IPAddress(192, 168, 1, 1  ));
+  outIp   = loadIPAddress("out", IPAddress(192, 168, 1, 99 ));
   inPort  = preferences.getUInt("inPort", 7001); // Load input port
   outPort = preferences.getUInt("outPort", 7000); // Load output port
   preferences.end();
@@ -111,6 +115,32 @@ void oscSend(int value) {
   msg.send(Udp);
   Udp.endPacket();
   msg.empty();
+}
+
+void processOSCData(uint8_t data_In){
+  if (DEBUG) { Serial.printf("Processing OSC Data: %d\n", data_In); }
+  if (data_In == device_id) {
+    strip.fill(strip.Color(RED)); // Set NeoPixel strip to green
+    strip.show(); // Update the strip to show the new color
+  }
+}
+
+void oscReceive() {
+  int packetSize = Udp.parsePacket(); // Check if a packet is available
+  if (packetSize > 0) {
+    OSCMessage msgIn;
+    while (packetSize--) { msgIn.fill(Udp.read()); }  // Fill the OSCMessage with incoming data 
+    if (msgIn.fullMatch("/device/")) {                // Check if the address matches "/device/"
+      int data = msgIn.getInt(0);                    // Get the integer value from the first argument
+      processOSCData(data);
+      if (DEBUG) {Serial.printf("Received OSC message: Address = /device/, Value = %d\n", data);}
+    } else if (msgIn.fullMatch("/clear/")){
+      strip.clear(); // Clear the NeoPixel strip
+      strip.show(); // Update the strip to show the cleared state
+      if (DEBUG) {Serial.println("Received OSC message: /clear/ - NeoPixel strip cleared.");}
+    } else { Serial.println("Received OSC message with unmatched address."); }
+    msgIn.empty(); // Clear the message after processing
+  }
 }
 
 void processData(String data) {
@@ -234,6 +264,7 @@ void setup() {
 }
 
 void loop() {
-  readSwitch();
-  readBTSerial();
+  readSwitch();   // Read switch state and send OSC message if pressed
+  readBTSerial(); // Read data from Bluetooth Serial
+  oscReceive();   // Check for incoming OSC messages
 }
