@@ -248,9 +248,14 @@ void ethInit() {
 }
 
 void stripInit() {
-  strip.begin(); // Initialize the NeoPixel strip
-  strip.setBrightness(255); // Set brightness to 50 (0-255)
+  strip.begin();                  // Initialize the NeoPixel strip
+  strip.setBrightness(255);       // Set brightness to 50 (0-255)
   strip.show();
+  strip.fill(strip.Color(RED));   // Set NeoPixel strip to red
+  strip.show();                   // Update the strip to show the new color
+  delay (1000);                   // Wait for 1 second
+  strip.clear();                  // Clear the NeoPixel strip
+  strip.show();                   // Update the strip to show the cleared state
 }
 
 void setup() {
