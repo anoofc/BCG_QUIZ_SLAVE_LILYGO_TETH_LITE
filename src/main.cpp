@@ -3,12 +3,13 @@
 #define DEVICE_NAME "BCG_SLAVE_"
 
 #define NUM_PIXELS  60    // Number of NeoPixels in the strip
-#define LED_PIN     13    // GPIO pin for NeoPixel strip
-#define SWITCH_PIN  14    // GPIO pin for the switch input
+#define LED_PIN     14    // GPIO pin for NeoPixel strip
+#define SWITCH_PIN  4    // GPIO pin for the switch input
 
 #define RED   255, 0,   0  // Red color value for NeoPixel
 #define GREEN 0,   255, 0
 #define BLUE  0,   0,   255  // Blue color value for NeoPixel
+#define WHITE 255, 255, 255 // White color value for NeoPixel
 
 #define DEBOUNCE_DELAY 500 // Debounce delay for switch input in milliseconds
 
@@ -120,7 +121,7 @@ void oscSend(int value) {
 void processOSCData(uint8_t data_In){
   if (DEBUG) { Serial.printf("Processing OSC Data: %d\n", data_In); }
   if (data_In == device_id) {
-    strip.fill(strip.Color(RED)); // Set NeoPixel strip to green
+    strip.fill(strip.Color(BLUE)); // Set NeoPixel strip to green
     strip.show(); // Update the strip to show the new color
   }
 }
@@ -131,7 +132,7 @@ void oscReceive() {
     OSCMessage msgIn;
     while (packetSize--) { msgIn.fill(Udp.read()); }  // Fill the OSCMessage with incoming data 
     if (msgIn.fullMatch("/device/")) {                // Check if the address matches "/device/"
-      int data = msgIn.getInt(0);                    // Get the integer value from the first argument
+      int data = msgIn.getInt(0);                     // Get the integer value from the first argument
       processOSCData(data);
       if (DEBUG) {Serial.printf("Received OSC message: Address = /device/, Value = %d\n", data);}
     } else if (msgIn.fullMatch("/clear/")){
@@ -251,7 +252,7 @@ void stripInit() {
   strip.begin();                  // Initialize the NeoPixel strip
   strip.setBrightness(255);       // Set brightness to 50 (0-255)
   strip.show();
-  strip.fill(strip.Color(RED));   // Set NeoPixel strip to red
+  strip.fill(strip.Color(WHITE));   // Set NeoPixel strip to red
   strip.show();                   // Update the strip to show the new color
   delay (1000);                   // Wait for 1 second
   strip.clear();                  // Clear the NeoPixel strip
