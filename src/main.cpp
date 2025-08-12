@@ -2,14 +2,17 @@
 
 #define DEVICE_NAME "BCG_SLAVE_"
 
-#define NUM_PIXELS  60    // Number of NeoPixels in the strip
-#define LED_PIN     14    // GPIO pin for NeoPixel strip
-#define SWITCH_PIN  4    // GPIO pin for the switch input
+#define NUM_PIXELS  30    // Number of NeoPixels in the strip1
+#define LED_PIN1    13    // GPIO pin for NeoPixel strip1
+#define LED_PIN2    14    // GPIO pin for second NeoPixel strip2
+#define LED_PIN3    33    // GPIO pin for third NeoPixel strip3
+#define SWITCH_PIN  32    // GPIO pin for the switch input
 
 #define RED   255, 0,   0  // Red color value for NeoPixel
 #define GREEN 0,   255, 0
 #define BLUE  0,   0,   255  // Blue color value for NeoPixel
 #define WHITE 255, 255, 255 // White color value for NeoPixel
+#define MAGENTA 255, 0,   255 // Magenta color value for NeoPixel
 
 #define DEBOUNCE_DELAY 500 // Debounce delay for switch input in milliseconds
 
@@ -23,7 +26,9 @@
 #include <Preferences.h>
 
 BluetoothSerial SerialBT; // Bluetooth Serial
-Adafruit_NeoPixel strip(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800); // NeoPixel strip on GPIO 13
+Adafruit_NeoPixel strip1(NUM_PIXELS, LED_PIN1, NEO_GRB + NEO_KHZ800); // NeoPixel strip1 on GPIO 13
+Adafruit_NeoPixel strip2(NUM_PIXELS, LED_PIN2, NEO_GRB + NEO_KHZ800); // NeoPixel strip2 on GPIO 14
+Adafruit_NeoPixel strip3(NUM_PIXELS, LED_PIN3, NEO_GRB + NEO_KHZ800); // NeoPixel strip3 on GPIO 33
 Preferences preferences;  // Preferences for storing data
 WiFiUDP Udp;
 
@@ -121,8 +126,15 @@ void oscSend(int value) {
 void processOSCData(uint8_t data_In){
   if (DEBUG) { Serial.printf("Processing OSC Data: %d\n", data_In); }
   if (data_In == device_id) {
-    strip.fill(strip.Color(BLUE)); // Set NeoPixel strip to green
-    strip.show(); // Update the strip to show the new color
+    strip1.setBrightness(255);       // Set brightness to 50 (0-255)
+    strip2.setBrightness(255);       // Set brightness to 50 (0-255) for strip2
+    strip3.setBrightness(255 );       // Set brightness to 50 (0-255) for strip3
+    strip1.fill(strip1.Color(MAGENTA)); // Set NeoPixel strip1 to BLUE
+    strip2.fill(strip2.Color(MAGENTA)); // Set NeoPixel strip2 to BLUE
+    strip3.fill(strip3.Color(MAGENTA));
+    strip1.show(); // Update the strip1 to show the new color
+    strip2.show(); // Update the strip2 to show the new color
+    strip3.show(); // Update the strip3 to show the new color
   }
 }
 
@@ -136,9 +148,19 @@ void oscReceive() {
       processOSCData(data);
       if (DEBUG) {Serial.printf("Received OSC message: Address = /device/, Value = %d\n", data);}
     } else if (msgIn.fullMatch("/clear/")){
-      strip.clear(); // Clear the NeoPixel strip
-      strip.show(); // Update the strip to show the cleared state
-      if (DEBUG) {Serial.println("Received OSC message: /clear/ - NeoPixel strip cleared.");}
+      strip1.clear(); // Clear the NeoPixel strip1
+      strip2.clear(); // Clear the NeoPixel strip2
+      strip3.clear(); // Clear the NeoPixel strip3
+      strip1.setBrightness(128);       // Set brightness to 50 (0-255)
+      strip2.setBrightness(128);       // Set brightness to 50 (0-255) for strip2
+      strip3.setBrightness(128);       // Set brightness to 50 (0-255) for strip3
+      strip1.fill(strip1.Color(BLUE));   
+      strip2.fill(strip2.Color(BLUE)); // Fill the strip1 and strip2 with magenta color
+      strip3.fill(strip3.Color(BLUE));
+      strip1.show(); // Update the strip1 to show the cleared state
+      strip2.show(); // Update the strip2 to show the cleared state
+      strip3.show(); // Update the strip3 to show the cleared state
+      if (DEBUG) {Serial.println("Received OSC message: /clear/ - NeoPixel strip1 cleared.");}
     } else { Serial.println("Received OSC message with unmatched address."); }
     msgIn.empty(); // Clear the message after processing
   }
@@ -249,14 +271,29 @@ void ethInit() {
 }
 
 void stripInit() {
-  strip.begin();                  // Initialize the NeoPixel strip
-  strip.setBrightness(255);       // Set brightness to 50 (0-255)
-  strip.show();
-  strip.fill(strip.Color(WHITE));   // Set NeoPixel strip to red
-  strip.show();                   // Update the strip to show the new color
+  strip1.begin();                  // Initialize the NeoPixel strip1
+  strip2.begin();                  // Initialize the NeoPixel strip2
+  strip3.begin();                  // Initialize the NeoPixel strip3
+  strip1.setBrightness(128);       // Set brightness to 50 (0-255)
+  strip2.setBrightness(128);       // Set brightness to 50 (0-255) for strip2
+  strip3.setBrightness(128);       // Set brightness to 50 (0-255) for strip3
+  strip1.show();
+  strip2.show();                   // Initialize the strip1 and strip2 to show the current state
+  strip3.show();                   // Initialize the strip3 to show the current state
+  strip1.fill(strip1.Color(WHITE));   
+  strip2.fill(strip2.Color(WHITE)); // Fill the strip1 and strip2 with white color
+  strip3.fill(strip3.Color(WHITE));
+  strip1.show();                   // Update the strip1 to show the new color
+  strip2.show();
+  strip3.show(); // Update the strip3 to show the new color
   delay (1000);                   // Wait for 1 second
-  strip.clear();                  // Clear the NeoPixel strip
-  strip.show();                   // Update the strip to show the cleared state
+  
+  strip1.fill(strip1.Color(BLUE));   
+  strip2.fill(strip2.Color(BLUE)); // Fill the strip1 and strip2 with white color
+  strip3.fill(strip3.Color(BLUE));
+  strip1.show();                   // Update the strip1 to show the cleared state
+  strip2.show();                   // Update the strip2 to show the cleared state
+  strip3.show();                   // Update the strip3 to show the cleared state
 }
 
 void setup() {
