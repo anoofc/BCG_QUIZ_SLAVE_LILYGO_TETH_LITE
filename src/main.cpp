@@ -128,7 +128,7 @@ void processOSCData(uint8_t data_In){
   if (data_In == device_id) {
     for (auto& strip : {&strip1, &strip2, &strip3}) {
       strip->setBrightness(255);          // Set brightness to maximum (0-255)
-      strip->fill(strip->Color(MAGENTA)); // Set NeoPixel strip to MAGENTA
+      strip->fill(strip->Color(RED)); // Set NeoPixel strip to MAGENTA
       strip->show();                      // Update the strip to show the new color
     }
   }
@@ -147,7 +147,8 @@ void oscReceive() {
       for (auto& strip : {&strip1, &strip2, &strip3}) {
           strip->clear(); // Clear the NeoPixel strip
           strip->setBrightness(128); // Set brightness to 50 (0-255)
-          strip->fill(strip->Color(BLUE)); // Fill the strip with blue color
+          if (device_id <= 4){strip->fill(strip->Color(BLUE)); } // Fill the strip with blue color
+          else if (device_id > 4) {strip->fill(strip->Color(MAGENTA));}
           strip->show(); // Update the strip to show the cleared state
       }
       if (DEBUG) {Serial.println("Received OSC message: /clear/ - NeoPixel strip1 cleared.");}
@@ -270,7 +271,8 @@ void stripInit() {
   delay(1000);                       // Wait for 1 second
 
   for (auto& strip : {&strip1, &strip2, &strip3}) {
-    strip->fill(strip->Color(BLUE)); // Fill the strip with blue color
+    if (device_id <= 4){strip->fill(strip->Color(BLUE)); } // Fill the strip with blue color
+    else if (device_id > 4) {strip->fill(strip->Color(MAGENTA));}
     strip->show();                   // Update the strip to show the new color
   }
 }
